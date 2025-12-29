@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Framework Fit Lab: NIST vs ISO vs SOC 2 (Week 6)</title>
+  <style>
+    :root{
+      --vone-blue:#4797cd;
+      --bg:#0b1220;
+      --card:rgba(255,255,255,0.08);
+      --text:rgba(255,255,255,0.92);
+      --muted:rgba(255,255,255,0.72);
+      --border:rgba(255,255,255,0.14);
+      --good:rgba(0,255,140,0.18);
+      --warn:rgba(255,193,7,0.18);
+      --bad:rgba(255,82,82,0.16);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      background: radial-gradient(1200px 600px at 15% 10%, rgba(71,151,205,0.26), transparent 60%),
+                  radial-gradient(1200px 600px at 80% 20%, rgba(255,255,255,0.10), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      padding:18px;
+    }
+    .app{
+      width:min(1150px,100%);
+      border:1px solid var(--border);
+      border-radius:18px;
+      overflow:hidden;
+      background:rgba(0,0,0,0.28);
+      backdrop-filter: blur(8px);
+      box-shadow:0 18px 50px rgba(0,0,0,0.35);
+    }
+    header{
+      padding:16px 18px;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .brand{display:flex;flex-direction:column;gap:2px}
+    .brand h1{margin:0;font-size:16px}
+    .brand p{margin:0;font-size:12px;color:var(--muted)}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 10px;border-radius:999px;border:1px solid var(--border);
+      color:var(--muted);font-size:12px;user-select:none;white-space:nowrap;
+    }
+    .dot{width:8px;height:8px;border-radius:50%;background:var(--vone-blue);box-shadow:0 0 16px rgba(71,151,205,0.9)}
+    main{padding:16px 18px 18px}
+    .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}
+    @media(max-width:1020px){.grid{grid-template-columns:1fr}}
+    .card{border:1px solid var(--border);border-radius:16px;background:var(--card);padding:14px}
+    .title{margin:0 0 6px;font-size:18px}
+    .text{margin:0 0 10px;line-height:1.45;color:var(--muted);font-size:14px;white-space:pre-wrap}
+
+    .brief{
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:rgba(0,0,0,0.20);
+      padding:12px;
+      margin-bottom:12px;
+    }
+    .badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+    .tag{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,0.18);
+      font-size:12px;color:rgba(255,255,255,0.88);
+      background:rgba(0,0,0,0.18);
+    }
+
+    .panel{
+      display:grid;gap:10px;
+    }
+    .question{font-size:14px;color:rgba(255,255,255,0.90)}
+    .options{display:grid;gap:10px}
+    button.opt{
+      width:100%;
+      text-align:left;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:rgba(0,0,0,0.22);
+      color:var(--text);
+      cursor:pointer;
+      transition:border-color .12s ease, transform .04s ease;
+      font-size:14px;
+      line-height:1.25;
+    }
+    button.opt:hover{border-color:rgba(71,151,205,0.55)}
+    button.opt:active{transform:translateY(1px)}
+    button.opt[disabled]{opacity:.65;cursor:not-allowed}
+
+    .feedback{
+      margin-top:12px;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      font-size:13px;
+      line-height:1.35;
+      white-space:pre-wrap;
+      display:none;
+    }
+    .feedback.good{background:var(--good)}
+    .feedback.warn{background:var(--warn)}
+    .feedback.bad{background:var(--bad)}
+
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .btn{
+      border:1px solid var(--border);
+      background:rgba(0,0,0,0.22);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:14px;
+      cursor:pointer;
+      font-size:13px;
+    }
+    .btn.primary{background:rgba(71,151,205,0.24);border-color:rgba(71,151,205,0.55)}
+    .btn[disabled]{opacity:.65;cursor:not-allowed}
+
+    .side h3{margin:0 0 8px;font-size:13px;color:rgba(255,255,255,0.86)}
+    .meter{display:grid;gap:10px}
+    .bar{height:10px;border-radius:999px;border:1px solid var(--border);background:rgba(0,0,0,0.18);overflow:hidden}
+    .fill{height:100%;background:var(--vone-blue);width:0%}
+    .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+    .stat{border:1px solid var(--border);border-radius:14px;background:rgba(0,0,0,0.18);padding:10px}
+    .stat p{margin:0;color:var(--muted);font-size:12px}
+    .stat strong{display:block;font-size:16px;color:var(--text);margin-top:4px}
+    .small{font-size:12px;color:var(--muted)}
+
+    .cards{
+      display:grid;
+      gap:10px;
+      margin-top:10px;
+    }
+    details{
+      border:1px solid rgba(255,255,255,0.14);
+      border-radius:14px;
+      background:rgba(0,0,0,0.18);
+      padding:10px 12px;
+    }
+    summary{
+      cursor:pointer;
+      font-size:13px;
+      color:rgba(255,255,255,0.92);
+      outline:none;
+    }
+    details p{
+      margin:8px 0 0;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.45;
+    }
+    .log{
+      margin-top:12px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:rgba(0,0,0,0.18);
+      padding:12px;
+    }
+    .log h4{margin:0 0 6px;font-size:12px;color:rgba(255,255,255,0.90)}
+    .log ul{margin:0;padding-left:18px;color:rgba(255,255,255,0.86);font-size:12px;line-height:1.45}
+
+    .codebox{
+      margin-top:12px;
+      display:none;
+      border:1px dashed rgba(255,255,255,0.30);
+      border-radius:14px;
+      padding:12px;
+      background:rgba(0,0,0,0.22);
+    }
+    .code{
+      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
+      font-size:16px;letter-spacing:.4px;margin-top:6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="brand">
+        <h1>Framework Fit Lab: NIST vs ISO vs SOC 2</h1>
+        <p>Week 6 Simulation · choose frameworks based on risk, industry expectations, and business goals</p>
+      </div>
+      <div class="pill"><span class="dot"></span><span id="progressText">Brief 1 of 4</span></div>
+    </header>
+
+    <main>
+      <div class="grid">
+        <!-- Left -->
+        <section class="card">
+          <h2 class="title" id="briefTitle"></h2>
+          <p class="text" id="briefText"></p>
+
+          <div class="brief">
+            <div class="badges" id="briefTags"></div>
+          </div>
+
+          <div class="panel">
+            <div class="question" id="question"></div>
+            <div class="options" id="options"></div>
+            <div class="feedback" id="feedback"></div>
+
+            <div class="actions">
+              <button class="btn primary" id="nextBtn" disabled>Continue</button>
+              <button class="btn" id="restartBtn">Restart Brief</button>
+            </div>
+
+            <div class="codebox" id="codeBox">
+              <div class="feedback good" style="display:block" id="finalSummary"></div>
+              <div class="small">Completion Code (paste into VONE):</div>
+              <div class="code" id="completionCode"></div>
+              <div class="actions" style="margin-top:10px;">
+                <button class="btn primary" id="copyBtn">Copy Code</button>
+                <button class="btn" id="replayBtn">Play Again</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Right -->
+        <aside class="card side">
+          <h3>Framework Cheat Cards</h3>
+          <div class="cards">
+            <details>
+              <summary>NIST CSF (high-level)</summary>
+              <p>Often used as a flexible, risk-based structure to organize a cybersecurity program. Helpful for maturity and prioritization. Not “one-size-fits-all.”</p>
+            </details>
+            <details>
+              <summary>ISO/IEC 27001 (high-level)</summary>
+              <p>Management system approach (ISMS). Strong for governance consistency and formal structure across the organization. Often chosen when a structured security management system matters.</p>
+            </details>
+            <details>
+              <summary>SOC 2 (high-level)</summary>
+              <p>Common for service organizations needing customer assurance. Focuses on demonstrating controls and evidence over a period of time. Often requested by customers/partners.</p>
+            </details>
+          </div>
+
+          <div class="meter" style="margin-top:12px">
+            <div>
+              <div class="small">Business Fit</div>
+              <div class="bar"><div class="fill" id="fitFill"></div></div>
+            </div>
+            <div>
+              <div class="small">Framework Clarity</div>
+              <div class="bar"><div class="fill" id="clarityFill"></div></div>
+            </div>
+            <div>
+              <div class="small">Audit Thinking</div>
+              <div class="bar"><div class="fill" id="auditFill"></div></div>
+            </div>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <p>Rank</p>
+              <strong id="rankText">—</strong>
+            </div>
+            <div class="stat">
+              <p>Score</p>
+              <strong id="scoreText">0</strong>
+            </div>
+          </div>
+
+          <div class="log">
+            <h4>Your Consultant Notes</h4>
+            <ul id="notes"></ul>
+          </div>
+
+          <p class="small" style="margin-top:12px;">
+            Week 6 lesson: frameworks give structure and assurance, but organizations choose based on risk, industry expectations, and business goals.
+          </p>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const briefs = [
+      {
+        title: "Brief 1: Fast-Growing SaaS Startup",
+        text: "A SaaS company is closing deals but prospects keep asking: “How do we know your security controls are real?”\nThey want reassurance and proof, not just promises.",
+        tags: ["Goal: Customer assurance", "Pressure: Prospects", "Need: Evidence over time"],
+        q: "Which framework is the best fit FIRST?",
+        correct: "SOC2",
+        why: "SOC 2 is commonly used for customer assurance and demonstrating controls with evidence over time.",
+        auditor: "Auditors generally look for consistent controls + evidence (logs, tickets, approvals, access reviews) tied to stated commitments.",
+        note: "SOC 2 fits when customers want assurance + proof"
+      },
+      {
+        title: "Brief 2: Mid-size Organization Building Structure",
+        text: "An organization has security tools, but decisions are inconsistent.\nLeadership wants a repeatable governance structure to manage security across teams.",
+        tags: ["Goal: Consistency", "Need: Governance structure", "Theme: Management system"],
+        q: "Which framework is the best fit FIRST?",
+        correct: "ISO27001",
+        why: "ISO 27001 centers on an information security management system (ISMS) that builds consistent governance and accountability.",
+        auditor: "Auditors generally look for defined processes, roles, risk treatment decisions, and evidence the system is operating as described.",
+        note: "ISO 27001 fits when you want a structured ISMS"
+      },
+      {
+        title: "Brief 3: Public-sector style risk program (or risk-driven org)",
+        text: "A risk team wants a flexible way to organize security priorities.\nThey need a structure to assess maturity, gaps, and improvements without forcing a single rigid checklist.",
+        tags: ["Goal: Risk-based structure", "Need: Flexibility", "Theme: Program maturity"],
+        q: "Which framework is the best fit FIRST?",
+        correct: "NIST",
+        why: "NIST CSF is often used as a flexible, risk-based framework to organize and mature a cybersecurity program.",
+        auditor: "Auditors generally look for a clear mapping between risks, chosen controls, and evidence that improvements are tracked and maintained.",
+        note: "NIST CSF fits for flexible risk-based program structure"
+      },
+      {
+        title: "Brief 4: Framework Selection Reality Check",
+        text: "A leader asks: “Which framework is the best one?”\nYou need to respond professionally and clarify that frameworks aren’t one-size-fits-all.",
+        tags: ["Goal: Explain professionally", "Theme: Not one-size-fits-all", "Need: Clear language"],
+        q: "What is the best professional answer?",
+        correct: "NOTONESIZE",
+        why: "Framework selection depends on risk, industry expectations, customer requirements, and business goals. Many organizations use more than one.",
+        auditor: "Auditors generally look for stated scope, consistent controls, and evidence that matches what the organization claims it does.",
+        note: "Frameworks are chosen based on goals + risk (often combined)"
+      }
+    ];
+
+    // UI
+    const progressText = document.getElementById("progressText");
+    const briefTitle = document.getElementById("briefTitle");
+    const briefText = document.getElementById("briefText");
+    const briefTags = document.getElementById("briefTags");
+    const question = document.getElementById("question");
+    const options = document.getElementById("options");
+    const feedback = document.getElementById("feedback");
+    const nextBtn = document.getElementById("nextBtn");
+    const restartBtn = document.getElementById("restartBtn");
+
+    const fitFill = document.getElementById("fitFill");
+    const clarityFill = document.getElementById("clarityFill");
+    const auditFill = document.getElementById("auditFill");
+    const rankText = document.getElementById("rankText");
+    const scoreText = document.getElementById("scoreText");
+    const notesEl = document.getElementById("notes");
+
+    const codeBox = document.getElementById("codeBox");
+    const finalSummary = document.getElementById("finalSummary");
+    const completionCode = document.getElementById("completionCode");
+    const copyBtn = document.getElementById("copyBtn");
+    const replayBtn = document.getElementById("replayBtn");
+
+    let idx = 0;
+    let score = 0;
+    let fit = 0, clarity = 0, audit = 0;
+    let notes = [];
+    let answered = false;
+
+    function clamp(n){ return Math.max(0, Math.min(100, n)); }
+
+    function rank(){
+      const t = fit + clarity + audit;
+      if (t >= 230) return "Framework Strategist";
+      if (t >= 190) return "Trust Builder";
+      if (t >= 150) return "Framework Translator";
+      return "Checklist Chaser (leveling up)";
+    }
+
+    function updateMeters(){
+      fitFill.style.width = clamp(fit) + "%";
+      clarityFill.style.width = clamp(clarity) + "%";
+      auditFill.style.width = clamp(audit) + "%";
+      rankText.textContent = rank();
+      scoreText.textContent = String(score);
+    }
+
+    function renderNotes(){
+      notesEl.innerHTML = "";
+      notes.forEach(n=>{
+        const li = document.createElement("li");
+        li.textContent = n;
+        notesEl.appendChild(li);
+      });
+    }
+
+    function lockOptions(){
+      Array.from(options.querySelectorAll("button.opt")).forEach(b=>b.disabled=true);
+    }
+
+    function renderBrief(){
+      // reset brief state
+      feedback.style.display = "none";
+      nextBtn.disabled = true;
+      answered = false;
+
+      const b = briefs[idx];
+      progressText.textContent = `Brief ${idx+1} of ${briefs.length}`;
+      briefTitle.textContent = b.title;
+      briefText.textContent = b.text;
+
+      briefTags.innerHTML = "";
+      b.tags.forEach(t=>{
+        const tag = document.createElement("span");
+        tag.className = "tag";
+        tag.textContent = t;
+        briefTags.appendChild(tag);
+      });
+
+      question.textContent = b.q;
+
+      options.innerHTML = "";
+      const opts = (b.correct === "NOTONESIZE")
+        ? [
+            { id:"ONESIZE", label:"“ISO 27001 is the best framework for everyone.”" },
+            { id:"NOTONESIZE", label:"“There isn’t one best framework. The right choice depends on risk, industry expectations, customer needs, and business goals.”" },
+            { id:"NIST", label:"“Pick NIST CSF always. It covers everything.”" }
+          ]
+        : [
+            { id:"NIST", label:"NIST CSF" },
+            { id:"ISO27001", label:"ISO/IEC 27001" },
+            { id:"SOC2", label:"SOC 2" }
+          ];
+
+      opts.forEach(o=>{
+        const btn = document.createElement("button");
+        btn.className = "opt";
+        btn.textContent = o.label;
+        btn.addEventListener("click", ()=>choose(o.id));
+        options.appendChild(btn);
+      });
+
+      updateMeters();
+      renderNotes();
+    }
+
+    function choose(choiceId){
+      if (answered) return;
+      answered = true;
+
+      lockOptions();
+
+      const b = briefs[idx];
+      const correct = (choiceId === b.correct);
+
+      // scoring
+      score += correct ? 28 : 10;
+
+      // meter impact
+      const mult = correct ? 1 : 0.5;
+      fit += 30 * mult;
+      clarity += 25 * mult;
+      audit += 20 * mult;
+
+      // notes
+      if (!notes.includes(b.note)) notes.push(b.note);
+
+      feedback.style.display = "block";
+      feedback.className = "feedback " + (correct ? "good" : "warn");
+      feedback.textContent =
+        (correct ? "✅ Strong fit.\n\n" : "⚠️ Not the best fit.\n\n") +
+        `Why: ${b.why}\n\n` +
+        `What auditors generally look for: ${b.auditor}`;
+
+      nextBtn.disabled = false;
+      updateMeters();
+      renderNotes();
+    }
+
+    function next(){
+      if (idx < briefs.length - 1){
+        idx++;
+        renderBrief();
+        return;
+      }
+      endGame();
+    }
+
+    function endGame(){
+      options.innerHTML = "";
+      question.textContent = "Lab complete.";
+      feedback.style.display = "none";
+      nextBtn.disabled = true;
+
+      const random3 = Math.floor(Math.random() * 900) + 100;
+      completionCode.textContent = `VONE-W6-${score}-${random3}`;
+
+      finalSummary.textContent =
+        `MISSION COMPLETE.\n\nRank: ${rank()}\nScore: ${score}\n\nWeek 6 takeaway:\nFrameworks provide structure and assurance, but they are not one-size-fits-all.\nOrganizations choose based on risk, customer expectations, industry norms, and business goals.`;
+
+      codeBox.style.display = "block";
+      updateMeters();
+    }
+
+    restartBtn.addEventListener("click", renderBrief);
+    nextBtn.addEventListener("click", next);
+
+    copyBtn.addEventListener("click", async ()=>{
+      try{
+        await navigator.clipboard.writeText(completionCode.textContent);
+        copyBtn.textContent = "Copied!";
+        setTimeout(()=>copyBtn.textContent="Copy Code", 900);
+      }catch{
+        copyBtn.textContent = "Copy manually";
+        setTimeout(()=>copyBtn.textContent="Copy Code", 900);
+      }
+    });
+
+    replayBtn.addEventListener("click", ()=>window.location.reload());
+
+    renderBrief();
+  </script>
+</body>
+</html>
